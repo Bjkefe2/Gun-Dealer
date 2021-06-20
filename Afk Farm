@@ -1,22 +1,22 @@
-
 local IsA = game.IsA
 
-getgenv().Farm = true;
+getgenv().Farm = true
 
+local function ProximtyPrompt(p1)
+    for i,v in pairs(p1:GetDescendants()) do 
+        if IsA(v,"ProximityPrompt") and v.Parent.Name == "Storage" then 
+        return true
+        end
+    end
+    return false
+end
 
-local vu = game:GetService("VirtualUser")
-game:GetService("Players").LocalPlayer.Idled:connect(function()
-  vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-  wait(1)
-  vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-end)
 
 local function Sell()
    for i,v in pairs(game:GetService("Workspace").SellBoxPort:GetDescendants()) do
        if IsA(v,"BasePart") and v.Name == "Seller" then
            if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
            local Hum = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-           Hum.CFrame = v.CFrame
            firetouchinterest(Hum,v,0)
            wait()
            firetouchinterest(Hum,v,1)
@@ -50,7 +50,7 @@ local function TweenFromPlayer(p1)
    local Tween = game:GetService("TweenService")
    local plr = game.Players.LocalPlayer
    local hum = plr.Character.HumanoidRootPart
-   Tween:create(hum,TweenInfo.new(5),{CFrame = CFrame.new(p1.Position)}):Play()
+   Tween:create(hum,TweenInfo.new(1),{CFrame = CFrame.new(p1.Position)}):Play()
 end
 
 
@@ -64,22 +64,28 @@ local function FromPlayerTycoon()
    end
    return "Not Find Base"
 end
-
+local Part
 local function AutoDelivery()
    local MyBase = FromPlayerTycoon()
    for i,v in pairs(MyBase:GetDescendants()) do
        if IsA(v,"BasePart") and v.Name == "Part" and v.Parent.Name == "PistolBox" then
            if PlayerBoxDetect() then
            Sell()
-           elseif FromPlayerDistance(v)  and v.Parent.Parent.Parent:FindFirstChild("Storage"):FindFirstChild("PickUpCrate") then
-           fireproximityprompt(v.Parent.Parent.Parent:FindFirstChild("Storage"):FindFirstChild("PickUpCrate"))
+           elseif FromPlayerDistance(v)  and ProximtyPrompt(v.Parent.Parent.Parent) then
+           v.Parent.Parent.Parent:FindFirstChild("Storage"):FindFirstChild("PickUpCrate"):InputHoldBegin()
+           wait(0.6)
+           v.Parent.Parent.Parent:FindFirstChild("Storage"):FindFirstChild("PickUpCrate"):InputHoldEnd()
+           wait(0.2)
            else
-           TweenFromPlayer(v)
+           game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame * CFrame.new(0,10,5)
            end
        end
    end
 end
 
-while getgenv().Farmm == true do wait()
-AutoDelivery()
+
+while getgenv().Farm == true do wait()
+    pcall(function()
+    AutoDelivery()
+    end)
 end
